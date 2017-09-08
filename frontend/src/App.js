@@ -60,17 +60,18 @@ class EntryListComponent extends Component {
         </table>
       </div>
     )
-  }
+  };
 }
 
 class EntryComponent extends Component {
   render() {
+    const {date, description, amount, category} = this.props.entry;
     return (
       <tr>
-        <td>{this.props.entry.date}</td>
-        <td>{this.props.entry.description}</td>
-        <td>{this.props.entry.amount}</td>
-        <td>{this.props.entry.category}</td>
+        <td>{date}</td>
+        <td>{description}</td>
+        <td>{amount}</td>
+        <td>{category}</td>
       </tr>
     )
   }
