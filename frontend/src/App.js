@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import './App.css';
-import 'bootstrap/dist/css/bootstrap.css'
+
+import 'bootstrap/dist/css/bootstrap.css';
+//import 'bootstrap/dist/css/bootstrap-theme.css';
+import {Button, ButtonToolbar, Modal, Form, FormGroup, FormControl, ControlLabel} from 'react-bootstrap'
 
 class App extends Component {
 
@@ -8,12 +11,15 @@ class App extends Component {
     super();
     this.state = {
       loaded: false,
+      showImportModal: true,
+      importModalDataFormat: "",
+      importModalFile: [],
       entries: []
     };
   }
 
   componentDidMount() {
-    window.fetch(new Request('api/entries')).then((response) => {
+    fetch('api/entries').then((response) => {
       return response.json();
     }).then((responseJson) => {
       this.setState({
@@ -23,17 +29,87 @@ class App extends Component {
     });
   }
 
+  openImportModal() {
+    this.setState({ showImportModal: true });
+  }
+
+  closeImportModal() {
+    this.setState({ showImportModal: false });
+  }
+
+  handleImportDataFormatChange(e) {
+    this.setState({importModalDataFormat: e.target.value});
+  }
+
+  handleImportFileChange(e) {
+    this.setState({importModalFile: e.target.files[0]});
+  }
+
+  handleImport() {
+
+    const reader = new FileReader();
+    reader.onload = ((e) => {
+      const form = new FormData();
+      form.append('dataFormat', this.state.importModalDataFormat);
+      form.append('file', e.currentTarget.result);
+      fetch('/api/import', {
+        method: 'POST',
+        body: form
+      });
+      this.closeImportModal();
+    });
+    reader.readAsText(this.state.importModalFile);
+/*
+    */
+  }
+
   render() {
     return (
-      <div className="App container">
-        <div className="App-header">
+      <div className="container">
+        <div>
           <h1>Spending Analyzer</h1>
         </div>
-        <button className="btn btn-default">Add</button>
-        <button className="btn btn-default">Edit</button>
-        <button className="btn btn-default">Delete</button>
-        <button className="btn btn-default">Import</button>
+        <ButtonToolbar>
+          <Button bsStyle="default">Add</Button>
+          <Button bsStyle="default">Edit</Button>
+          <Button bsStyle="default">Delete</Button>
+          <Button
+            bsStyle="primary"
+            onClick={this.openImportModal.bind(this)}>Import</Button>
+        </ButtonToolbar>
         <EntryListComponent entries={this.state.entries} loaded={this.state.loaded} />
+
+        <Modal show={this.state.showImportModal} onHide={this.closeImportModal.bind(this)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Import</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <FormGroup>
+                <ControlLabel>Data format</ControlLabel>
+                <FormControl
+                    componentClass="select"
+                    value={this.state.importModalDataFormat}
+                    onChange={this.handleImportDataFormatChange.bind(this)}>
+                  <option value="">Select...</option>
+                  <option value="wellsfargo">Wells Fargo</option>
+                  <option value="venmo">Venmo</option>
+                  <option value="splitwise">Splitwise</option>
+                </FormControl>
+              </FormGroup>
+
+              <FormGroup>
+                <ControlLabel>File</ControlLabel>
+                <FormControl type="file"
+                    onChange={this.handleImportFileChange.bind(this)}/>
+              </FormGroup>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button bsStyle="default" onClick={this.closeImportModal.bind(this)}>Cancel</Button>
+            <Button bsStyle="primary" onClick={this.handleImport.bind(this)}>Import</Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     );
   }

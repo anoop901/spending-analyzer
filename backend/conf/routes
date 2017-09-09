@@ -4,6 +4,7 @@
 # ~~~~
 
 GET     /api/entries                controllers.ApiController.getEntries
+POST	/api/import					controllers.ApiController.importEntries
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/frontend/build", file: Asset)
