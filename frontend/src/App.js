@@ -11,14 +11,19 @@ class App extends Component {
     super();
     this.state = {
       loaded: false,
-      showImportModal: true,
+      showImportModal: false,
       importModalDataFormat: "",
-      importModalFile: [],
+      importModalFile: null,
       entries: []
     };
   }
 
   componentDidMount() {
+    this.refreshEntryList()
+  }
+
+  refreshEntryList() {
+    this.setState({loaded: false});
     fetch('api/entries').then((response) => {
       return response.json();
     }).then((responseJson) => {
@@ -55,8 +60,10 @@ class App extends Component {
       fetch('/api/import', {
         method: 'POST',
         body: form
+      }).then((response) => {
+        this.closeImportModal();
+        this.refreshEntryList();
       });
-      this.closeImportModal();
     });
     reader.readAsText(this.state.importModalFile);
 /*
@@ -144,9 +151,9 @@ class EntryComponent extends Component {
     const {date, description, amount, category} = this.props.entry;
     return (
       <tr>
-        <td>{date}</td>
+        <td>{new Date(Date.parse(date)).toUTCString()}</td>
         <td>{description}</td>
-        <td>{amount}</td>
+        <td className={amount < 0 ? "amount-negative" : "amount-positive"}>{amount < 0 ? "-" : "+"} ${Math.abs(amount).toFixed(2)}</td>
         <td>{category}</td>
       </tr>
     )
